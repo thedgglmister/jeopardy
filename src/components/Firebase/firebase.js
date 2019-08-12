@@ -41,7 +41,10 @@ class Firebase {
     this.users = this.users.bind(this);
   }
 
-  // *** Auth API ***
+
+
+  // *** Auth API *** //
+
   doCreateUserWithEmailAndPassword = function(email, password) {
     return this.auth.createUserWithEmailAndPassword(email, password);
   }
@@ -62,8 +65,9 @@ class Firebase {
     return this.auth.currentUser.updatePassword(password);
   }
 
-  // *** User API ***
 
+
+  // *** User API *** //
 
   user = function(uid) {
     return this.db.ref(`users/${uid}`);
@@ -72,6 +76,48 @@ class Firebase {
   users = function() {
     return this.db.ref('users');
   }
+
+
+
+  // *** Categories API *** //
+
+  myCategories = function(uid) {
+    const ref = this.db.ref('categories');
+    console.log(334);
+    console.log(ref);
+
+    return ref
+            .orderByChild('creatorUid')
+            .startAt(uid).endAt(uid);
+  }
+
+  category = function(categoryId) {
+    const ref = this.db.ref('categories').child(categoryId);
+    console.log(335);
+    console.log(ref);
+
+    return ref;
+  }
+
+  createCategory = function(categoryObj, questions) {
+    const categoriesRef = this.db.ref('categories');
+    // console.log(335);
+    // console.log(ref);
+    //
+
+    const newCategoryRef = categoriesRef.push();
+    newCategoryRef.set(categoryObj);
+    console.log(111);
+    questions.forEach((question) => {
+      newCategoryRef.child('questions').push(question);
+    });
+    console.log(222);
+
+
+    return newCategoryRef;
+  }
+
+
 
   // *** Merge Auth and DB User API *** //
 
@@ -102,6 +148,12 @@ class Firebase {
         fallback();
       }
     });
+
+
+
+
+
+
 
 
 }
