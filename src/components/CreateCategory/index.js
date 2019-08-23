@@ -3,29 +3,46 @@ import { compose } from 'recompose';
 
 import { withFirebase } from '../Firebase';
 import { AuthUserContext, withAuthorization } from '../Session';
+import MyCategoriesList from './myCategoriesList';
+import CategoryForm from './categoryForm';
 
-class MyCategoriesList extends Component {
+
+
+
+class CreateCategoryPageBase extends Component {
+
   constructor(props) {
     super(props);
+    console.log('constr');
 
     this.state = {
       myCategories: [],
+      currentCategoryId: null,
       loading: false,
     };
+
+    this.setCurrentCategoryId = this.setCurrentCategoryId.bind(this);
+    this.resetAfterSubmit = this.resetAfterSubmit.bind(this);
+
   }
 
   componentDidMount() {
     this.setState({ loading: true });
+    console.log(332);
+    console.log(this.props.authUser);
 
     const uid = this.props.authUser.uid;
 
     this.props.firebase.myCategories(uid).on('value', snapshot => {
+      console.log(snapshot.val());
       const categoriesObject = Object.assign({}, snapshot.val());
 
       const categoriesList = Object.keys(categoriesObject).map(categoryId => ({
         ...categoriesObject[categoryId],
         categoryId: categoryId,
       }));
+
+      console.log(categoriesList);
 
       this.setState({
         myCategories: categoriesList,
@@ -39,520 +56,108 @@ class MyCategoriesList extends Component {
     this.props.firebase.myCategories(uid).off();
   }
 
+  setCurrentCategoryId(event) {
+    console.log(93);
+    this.setState({
+      currentCategoryId: event.currentTarget.getAttribute("name"),
+    });
+    console.log(event.currentTarget.getAttribute("name"));
+  }
+
+  resetAfterSubmit() {
+    console.log(77772);
+    this.setState({
+      currentCategoryId: null,
+    });
+  }
+
+  newCategory = () => {
+    return {
+      categoryName: '',
+      questions: {
+        0: {question: '', answer: '',value: 200},
+        1: {question: '', answer: '',value: 400},
+        2: {question: '', answer: '',value: 600},
+        3: {question: '', answer: '',value: 800},
+        4: {question: '', answer: '',value: 1000},
+      }
+    };
+  }
+
   render() {
-    const { myCategories, loading } = this.state;
+    const { myCategories, currentCategoryId, loading } = this.state;
+    console.log(currentCategoryId);
+
+
+    const matchingCategory = myCategories.find((category) => (category.categoryId == currentCategoryId));
+    const currentCategory = matchingCategory ? matchingCategory : this.newCategory();
+    console.log(matchingCategory);
+    console.log(currentCategory);
+
+
+    console.log(78);
+    console.log(myCategories);
 
     return (
       <div>
-        <h1>My Categories</h1>
-        {loading && <div>Loading ...</div>}
-        <div>
-          {myCategories.map(category => (
-            <div key={category.categoryId}>
-              <a name={category.categoryId} onClick={this.props.setCategoryIdInState}>
-                {category.categoryName} {category.complete ? '' : '(Incomplete)'}
-              </a>
-            </div>
-          ))}
-          <div>
-            <a onClick={this.props.setCategoryIdInState}>
-              New Category
-            </a>
-          </div>
-        </div>
 
+          <CategoryForm category={currentCategory}
+                        authUser={this.props.authUser}
+                        resetAfterSubmit={this.resetAfterSubmit}/>
+          <MyCategoriesList myCategories={myCategories}
+                          loading={loading}
+                          setCurrentCategoryId={this.setCurrentCategoryId} />
+
+          ***currentGameId stored on user, so if it has an id we can grab all data for it.***
+
+          new game button inserts a new game (and fetchs questions? or wait until game starts? i think wait)
+          then use that gameid to give three links
+          one for the tv screen, which anyone can go to and will always see same the same state (need a screen ref?)
+          one for the host, which can only have one at a time. host can "Stop Hosting" which nulls out host data, and allows someone else to host. only need to worry about tracking which categories they've seen. whenever a host is added, check if the game has a status of in progress, and mark it as played. and then also when it becomes in progress, set the current host to having played. same with player? no. whenever the host or one of the three players in null, the tv says "Waiting for Host... Waiting for Player 1".
+          one for the players. they choose a slot, 1, 2, or 3 depending on what is still available in the ref. can leave but only when the game has status of 'initiated'.
+
+          only thing i need to wory about is if there are people spectators, how to mark the questions as seen. need a link from gameId that they can go to which takes them to the app and then gets their authUser and marks the game as seen. need to advertise that somehow. can i do a scan code on the question screen?
+
+          add qr codes in addition to links. https://gist.github.com/gene1wood/51b8dccb2ea13c1103d6b4e4f37c9966
+          players just scan next to "Waiting for Player 1", etc.
+          And spectators can scan to say theyve seen it.
+
+          The fun of it is that the questions don't need to be jeopardy style. no stress to make 'good' questions. just try to make some that aren't too obscure.
+
+          Also need a way to submit final jeopardy questions and categories.
+
+          the screen should light up when you can buzz in, or count down or something with lights. but need to keep phone turn on perfectly in sync with it. how?
+          what i need to do when a question is chosen is this. put question on screen, if there's max of half second potential delay, which maybe is a large asuumption?, then it calculates from the time the question went live how long it needs to go for, so that they all match exactly. they learn what time they should change state from firebase, but the client side ensures that they go off at that time. that way the screen can light up as well
+          is this the only issue where timing is crucial? also, look up how others do it.
+          https://jsfiddle.net/48ue2hsb/4/
+
+
+          need to put something firebase on the internet and try on two devices how much delay there is. try with me and justine.
+
+          https://firebase.google.com/docs/database/web/read-and-write#save_data_as_transactions (if this is about blocking, need ot do it when taking positions in a game, and for buzzer, or whatever)
+
+          the board screen shows the links and qr codes if there arent four people. otherwise, it shows "waiting for host...", and then when host clicks ready and sets state to active, it turns to actual board. whenever there isn't 4 people, it sets state to inactive and goes back to links screen.
       </div>
-    );
-  }
-}
-
-
-
-
-class EditCategoryForm extends Component {
-  constructor(props) {
-    super(props);
-
-    this.INITIAL_STATE = {
-      loading: false,
-      categoryName: '',
-      question1: '',
-      question2: '',
-      question3: '',
-      question4: '',
-      question5: '',
-      answer1: '',
-      answer2: '',
-      answer3: '',
-      answer4: '',
-      answer5: '',
-      error: null,
-    };
-
-    this.state = {
-      ...this.INITIAL_STATE,
-    };
-  }
-
-  componentDidMount() {
-    this.updateFormWithCategoryData(this.props.categoryId);
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.categoryId !== prevProps.categoryId) {
-      this.updateFormWithCategoryData(this.props.categoryId);
-    }
-  }
-
-  updateFormWithCategoryData(categoryId) {
-    this.setState({
-      ...this.INITIAL_STATE,
-      loading: true,
-    });
-
-    this.props.firebase.category(categoryId).once('value', snapshot => {
-
-      const categoryObj = snapshot.val();
-      const questionsObj = Object.assign({}, categoryObj.questions);
-      const questionsList = Object.keys(questionsObj).map(questionId => ({
-        ...questionsObj[questionId],
-        questionId: questionId,
-      }));
-      questionsList.sort((questionObj1, questionObj2) => questionObj1.value - questionObj2.value);
-
-      this.setState({
-        loading: false,
-        categoryName: categoryObj.categoryName ? categoryObj.categoryName : '',
-        question1: questionsList[0].question,
-        question2: questionsList[1].question,
-        question3: questionsList[2].question,
-        question4: questionsList[3].question,
-        question5: questionsList[4].question,
-        answer1: questionsList[0].answer,
-        answer2: questionsList[1].answer,
-        answer3: questionsList[2].answer,
-        answer4: questionsList[3].answer,
-        answer5: questionsList[4].answer,
-      });
-
-    });
-  }
-
-  onChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
-  onSubmit = (event) => {
-    const {
-      categoryName,
-      question1,
-      question2,
-      question3,
-      question4,
-      question5,
-      answer1,
-      answer2,
-      answer3,
-      answer4,
-      answer5 } = this.state;
-
-    const categoryUpdateObj = {
-      complete: !(!categoryName || !question1 || !question2 || !question3 ||
-                  !question4 || !question5 || !answer1 || !answer2 ||
-                  !answer3 || !answer4 || !answer5),
-      lastModified: new Date().toISOString(),
-      categoryName: categoryName,
-    };
-
-
-
-    console.log(categoryUpdateObj);
-
-    const questions = [
-      {question: question1, answer: answer1, value: 200},
-      {question: question2, answer: answer2, value: 400},
-      {question: question3, answer: answer3, value: 600},
-      {question: question4, answer: answer4, value: 800},
-      {question: question5, answer: answer5, value: 1000},
-    ];
-
-    this.props.firebase
-      .createCategory(categoryObj, questions)
-      .then((newCategoryRef) => {
-        console.log(554);
-        console.log(newCategoryRef.key);
-        console.log(categoryObj.complete);
-        // if (categoryObj.complete) {
-          this.setState({ ...this.INITIAL_STATE });
-        // }
-        // else {
-        //   this.props.setCategoryIdInState(newCategoryRef.key);
-        // }
-      })
-      .catch(error => {
-        this.setState({ error });
-      });
-
-    event.preventDefault();
-  };
-
-  render() {
-    const {
-      loading,
-      error,
-      categoryName,
-      question1,
-      question2,
-      question3,
-      question4,
-      question5,
-      answer1,
-      answer2,
-      answer3,
-      answer4,
-      answer5 } = this.state;
-
-    const isInvalid = false;
-
-    return (
-      <form onSubmit={this.onSubmit}>
-        <input
-          name="categoryName"
-          value={categoryName ? categoryName : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Category Name"
-        />
-        <input
-          name="question1"
-          value={question1 ? question1 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 1"
-        />
-        <input
-          name="answer1"
-          value={answer1 ? answer1 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 1"
-        />
-        <input
-          name="question2"
-          value={question2 ? question2 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 2"
-        />
-        <input
-          name="answer2"
-          value={answer2 ? answer2 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 2"
-        />
-        <input
-          name="question3"
-          value={question3 ? question3 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 3"
-        />
-        <input
-          name="answer3"
-          value={answer3 ? answer3 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 3"
-        />
-        <input
-          name="question4"
-          value={question4 ? question4 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 4"
-        />
-        <input
-          name="answer4"
-          value={answer4 ? answer4 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 4"
-        />
-        <input
-          name="question5"
-          value={question5 ? question5 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 5"
-        />
-        <input
-          name="answer5"
-          value={answer5 ? answer5 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 5"
-        />
-
-        <button disabled={isInvalid} type="submit">
-          Save Category
-        </button>
-
-        {error && <p>{error.message}</p>}
-      </form>
-    );
-  }
-
-}
-
-
-
-class CreateCategoryForm extends Component {
-  constructor(props) {
-    super(props);
-
-    this.INITIAL_STATE = {
-      categoryName: '',
-      question1: '',
-      question2: '',
-      question3: '',
-      question4: '',
-      question5: '',
-      answer1: '',
-      answer2: '',
-      answer3: '',
-      answer4: '',
-      answer5: '',
-      error: null,
-    };
-
-    this.state = {
-      ...this.INITIAL_STATE,
-    };
-  }
-
-  onChange = (event) => {
-    this.setState({ [event.target.name]: event.target.value });
-  };
-
-  onSubmit = (event) => {
-    const {
-      categoryName,
-      question1,
-      question2,
-      question3,
-      question4,
-      question5,
-      answer1,
-      answer2,
-      answer3,
-      answer4,
-      answer5 } = this.state;
-
-    const categoryObj = {
-      complete: !(!categoryName || !question1 || !question2 || !question3 ||
-                  !question4 || !question5 || !answer1 || !answer2 ||
-                  !answer3 || !answer4 || !answer5),
-      creatorUid: this.props.authUser.uid,
-      createdDate: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
-      categoryName: categoryName,
-    };
-
-    console.log(categoryObj);
-
-    const questions = [
-      {question: question1, answer: answer1, value: 200},
-      {question: question2, answer: answer2, value: 400},
-      {question: question3, answer: answer3, value: 600},
-      {question: question4, answer: answer4, value: 800},
-      {question: question5, answer: answer5, value: 1000},
-    ];
-
-    this.props.firebase
-      .createCategory(categoryObj, questions)
-      .then((newCategoryRef) => {
-        console.log(554);
-        console.log(newCategoryRef.key);
-        console.log(categoryObj.complete);
-        // if (categoryObj.complete) {
-          this.setState({ ...this.INITIAL_STATE });
-        // }
-        // else {
-        //   this.props.setCategoryIdInState(newCategoryRef.key);
-        // }
-      })
-      .catch(error => {
-        this.setState({ error });
-      });
-
-    event.preventDefault();
-  };
-
-  render() {
-    const {
-      loading,
-      error,
-      categoryName,
-      question1,
-      question2,
-      question3,
-      question4,
-      question5,
-      answer1,
-      answer2,
-      answer3,
-      answer4,
-      answer5 } = this.state;
-
-      const isInvalid = !categoryName;
-
-    return (
-      <form onSubmit={this.onSubmit}>
-        <input
-          name="categoryName"
-          value={categoryName ? categoryName : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Category Name"
-        />
-        <input
-          name="question1"
-          value={question1 ? question1 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 1"
-        />
-        <input
-          name="answer1"
-          value={answer1 ? answer1 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 1"
-        />
-        <input
-          name="question2"
-          value={question2 ? question2 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 2"
-        />
-        <input
-          name="answer2"
-          value={answer2 ? answer2 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 2"
-        />
-        <input
-          name="question3"
-          value={question3 ? question3 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 3"
-        />
-        <input
-          name="answer3"
-          value={answer3 ? answer3 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 3"
-        />
-        <input
-          name="question4"
-          value={question4 ? question4 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 4"
-        />
-        <input
-          name="answer4"
-          value={answer4 ? answer4 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 4"
-        />
-        <input
-          name="question5"
-          value={question5 ? question5 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Question 5"
-        />
-        <input
-          name="answer5"
-          value={answer5 ? answer5 : ''}
-          onChange={this.onChange}
-          type="text"
-          placeholder="Answer 5"
-        />
-
-        <button disabled={isInvalid} type="submit">
-          Save Category
-        </button>
-
-        {error && <p>{error.message}</p>}
-      </form>
-    );
-  }
-
-}
-
-
-
-
-
-
-class CreateCategoryPage extends Component {
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      categoryId: null,
-    };
-
-  }
-
-  setCategoryIdInState = (event) => {
-    const categoryId = event.target.name;
-    this.setState({
-      categoryId: categoryId,
-    });
-
-    event.preventDefault();
-  }
-
-  render() {
-    const { categoryId } = this.state;
-
-    return (
-      <AuthUserContext.Consumer>
-        {authUser => (
-          <div>
-            <h1>{categoryId ? 'Edit' : 'Create'} Category</h1>
-            <MyCategoriesList authUser={authUser}
-                              firebase={this.props.firebase}
-                              setCategoryIdInState={this.setCategoryIdInState} />
-            {categoryId ? (
-              <EditCategoryForm authUser={authUser}
-                                firebase={this.props.firebase}
-                                categoryId={categoryId} />
-            ) : (
-              <CreateCategoryForm authUser={authUser}
-                                  firebase={this.props.firebase} />
-            )}
-          </div>
-        )}
-      </AuthUserContext.Consumer>
     );
   }
 
 };
 
+
+
+
+
+
+
+
+
+
+
 const condition = authUser => !!authUser;
 
-export default compose(
+const CreateCategoryPage = compose(
   withAuthorization(condition),
   withFirebase,
-)(CreateCategoryPage);
+)(CreateCategoryPageBase);
+
+export default CreateCategoryPage;

@@ -9,6 +9,7 @@ import * as ROUTES from '../../constants/routes';
 const withAuthorization = condition => Component => {
 
   class WithAuthorization extends React.Component {
+
     componentDidMount() {
       this.listener = this.props.firebase.onAuthUserListener(
         authUser => {
@@ -28,7 +29,7 @@ const withAuthorization = condition => Component => {
       return (
         <AuthUserContext.Consumer>
           {authUser =>
-            condition(authUser) ? <Component {...this.props} /> : null
+            condition(authUser) ? <Component {...this.props} authUser={authUser} /> : null
           }
         </AuthUserContext.Consumer>
       );

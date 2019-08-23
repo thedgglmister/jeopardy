@@ -2,6 +2,9 @@ import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
 
+import * as ROUTES from '../../constants/routes';
+
+
 
 
 const prodConfig = {
@@ -39,6 +42,9 @@ class Firebase {
     this.doPasswordUpdate = this.doPasswordUpdate.bind(this);
     this.user = this.user.bind(this);
     this.users = this.users.bind(this);
+    this.createNewGameId = this.createNewGameId.bind(this);
+    this.game = this.game.bind(this);
+
   }
 
 
@@ -101,9 +107,6 @@ class Firebase {
 
   createCategory = function(categoryObj, questions) {
     const categoriesRef = this.db.ref('categories');
-    // console.log(335);
-    // console.log(ref);
-    //
 
     const newCategoryRef = categoriesRef.push();
     newCategoryRef.set(categoryObj);
@@ -116,6 +119,34 @@ class Firebase {
 
     return newCategoryRef;
   }
+
+
+  editCategory = function(categoryId, categoryObj) {
+    const categoryRef = this.db.ref('categories').child(categoryId);
+
+
+    return categoryRef.set(categoryObj);
+
+  }
+
+
+
+  // *** Games API *** //
+
+  createNewGameId = function() {
+    const gamesRef = this.db.ref('games');
+    const gameRef = gamesRef.push({
+      gameStatus: 'New',
+    });
+    return gameRef.key;
+  }
+
+  game = function(gameId) {
+    const gameRef = this.db.ref('games').child(gameId);
+    return gameRef;
+  }
+
+
 
 
 
