@@ -8,6 +8,4 @@ export const PASSWORD_FORGET = '/pw-forget';
 export const CREATE_CATEGORY = '/create-categories';
 export const BOARD = '/game/:gameId/board';
 export const HOST = '/game/:gameId/host';
-export const PLAYER_1 = '/game/:gameId/p1';
-export const PLAYER_2 = '/game/:gameId/p2';
-export const PLAYER_3 = '/game/:gameId/p3';
+export const PLAYER = '/game/:gameId/player/:playerNumber';

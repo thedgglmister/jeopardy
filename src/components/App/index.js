@@ -15,6 +15,8 @@ import AdminPage from '../Admin';
 import CreateCategoryPage from '../CreateCategory';
 import StartGamePage from '../StartGame';
 import HostPage from '../HostPage';
+import PlayerPage from '../PlayerPage';
+
 
 
 
@@ -40,7 +42,9 @@ const App = () => (
       <Route path={ROUTES.CREATE_CATEGORY} component={CreateCategoryPage} />
       <Route path={ROUTES.BOARD} component={StartGamePage} />
       <Route path={ROUTES.HOST} component={HostPage} />
-    
+      <Route path={ROUTES.PLAYER} component={PlayerPage} />
+
+
 
 
 

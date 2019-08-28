@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { compose } from 'recompose';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Link } from 'react-router-dom';
 
 import { withFirebase } from '../Firebase';
 import StartGameLinks from './startGameLinks';
-import * as ROUTES from '../../constants/routes';
 
 
 
@@ -93,6 +92,38 @@ class NewGameButtonBase extends Component {
 
 };
 
+class ResumeGameButton extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    const { role, gameId } = this.props.currentGame;
+    return (
+      <Link to={`/game/${gameId}/${role == 'host' ? 'host' : `player/${role}`}`}>
+        {role == 'host' ? 'Resume Hosting' : 'Resume Playing'}
+      </Link>
+    );
+  }
+
+};
+
+class ToBoardButton extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    const { gameId } = this.props.currentGame;
+    return (
+      <Link to={`/game/${gameId}/board`}>
+        To Board
+      </Link>
+    );
+  }
+
+};
+
 const NewGameButton = compose(
   withRouter,
   withFirebase,
@@ -100,5 +131,6 @@ const NewGameButton = compose(
 
 
 
+
 export default StartGamePage;
-export { NewGameButton };
+export { NewGameButton, ResumeGameButton, ToBoardButton };

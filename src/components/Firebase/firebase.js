@@ -2,7 +2,7 @@ import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/database';
 
-import * as ROUTES from '../../constants/routes';
+
 
 
 
@@ -148,12 +148,88 @@ class Firebase {
 
 
 
+  // ** Players API ** //
+
+  startHosting = function(gameId, uid) {
+    const ref = this.db.ref();
+
+    const currentGameUpdate = {
+      gameId: gameId,
+      role: 'host',
+    };
+
+    const gameHostUpdate = {
+      uid: uid,
+    };
+
+    const updates = {}
+    updates[`games/${gameId}/host`] = gameHostUpdate;
+    updates[`users/${uid}/currentGame`] = currentGameUpdate;
+
+    return ref.update(updates);
+  }
+
+  stopHosting = function(gameId, uid) {
+    const ref = this.db.ref();
+
+    const currentGameUpdate = null;
+    const gameHostUpdate = null;
+
+    const updates = {}
+    updates[`games/${gameId}/host`] = gameHostUpdate;
+    updates[`users/${uid}/currentGame`] = currentGameUpdate;
+
+    return ref.update(updates);
+  }
+
+  startPlaying = function(gameId, playerNumber, uid) {
+    const ref = this.db.ref();
+
+    const currentGameUpdate = {
+      gameId: gameId,
+      role: playerNumber,
+    };
+
+    const gamePlayerUpdate = {
+      uid: uid,
+      score: 0,
+    };
+
+    const updates = {}
+    updates[`games/${gameId}/${playerNumber}`] = gamePlayerUpdate;
+    updates[`users/${uid}/currentGame`] = currentGameUpdate;
+
+    return ref.update(updates);
+  }
+
+  stopPlaying = function(gameId, playerNumber, uid) {
+    console.log(887);
+    console.log(playerNumber, uid, gameId);
+
+    const ref = this.db.ref();
+
+    const currentGameUpdate = null;
+    const gamePlayerUpdate = null;
+
+    const updates = {}
+    updates[`games/${gameId}/${playerNumber}`] = gamePlayerUpdate;
+    updates[`users/${uid}/currentGame`] = currentGameUpdate;
+    console.log(updates);
+
+
+    return ref.update(updates);
+  }
+
+
+
+
 
 
   // *** Merge Auth and DB User API *** //
 
   onAuthUserListener = (next, fallback) =>
     this.auth.onAuthStateChanged(authUser => {
+      console.log(333999);
       if (authUser) {
         this.user(authUser.uid)
           .once('value')

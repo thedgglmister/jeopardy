@@ -39,9 +39,9 @@ class StartGameLinks extends Component {
     return (
       <div>
         {!host && <JoinGameLink path={`/game/${gameId}/host`} text="Become Host" />}
-        {!p1 && <JoinGameLink path={`/game/${gameId}/p1`} text="Become Player 1" />}
-        {!p2 && <JoinGameLink path={`/game/${gameId}/p2`} text="Become Player 2" />}
-        {!p3 && <JoinGameLink path={`/game/${gameId}/p3`} text="Become Player 3" />}
+        {!p1 && <JoinGameLink path={`/game/${gameId}/player/p1`} text="Become Player 1" />}
+        {!p2 && <JoinGameLink path={`/game/${gameId}/player/p2`} text="Become Player 2" />}
+        {!p3 && <JoinGameLink path={`/game/${gameId}/player/p3`} text="Become Player 3" />}
         {host && p1 && p2 && p3 && <h1>Waiting for host to start the game...</h1>}
 
       </div>

@@ -1,9 +1,13 @@
 import React, { Component } from 'react';
 import { compose } from 'recompose';
-
+import { withRouter } from 'react-router-dom';
 
 import { withFirebase } from '../Firebase';
 import { withAuthorization } from '../Session';
+import StopHostingButton from './stopHostingButton';
+import * as ROUTES from '../../constants/routes';
+
+
 
 
 class HostPageBase extends Component {
@@ -14,6 +18,8 @@ class HostPageBase extends Component {
     this.state = {
       loading: true,
     };
+
+    this.stopHosting = this.stopHosting.bind(this);
   }
 
 
@@ -21,13 +27,14 @@ class HostPageBase extends Component {
 
     const gameId = this.props.match.params.gameId;
 
-    const gameRef = this.props.firebase.game(gameId);
-    gameRef.on('value', (snapshot) => {
+    this.gameRef = this.props.firebase.game(gameId);
+    this.gameRef.on('value', (snapshot) => {
       console.log(123);
 
       const game = Object.assign({gameId: gameId}, snapshot.val());
       console.log(game);
       let errorMsg = null;
+      let waiting = false;
       const { gameStatus, host, p1, p2, p3 } = game;
       if (!gameStatus) {
         errorMsg = "I think you're in the wrong place";
@@ -36,9 +43,7 @@ class HostPageBase extends Component {
         errorMsg = "This game has already finished";
       }
       else if (!host) {
-        gameRef.update({
-          host: this.props.authUser.uid
-        })
+        this.props.firebase.startHosting(gameId, this.props.authUser.uid)
           .catch((error) => {
             this.setState({
               loading: false,
@@ -47,36 +52,51 @@ class HostPageBase extends Component {
           });
         return;
       }
-      else if (host != this.props.authUser.uid) {
+      else if (host.uid != this.props.authUser.uid) {
         errorMsg = "This game already has a host";
       }
       else if (gameStatus == "New" && !(p1 && p2 && p3)) {
-        errorMsg = "Waiting for players to join...";
+        waiting = true;
       }
 
       this.setState({
         loading: !host && !errorMsg,
         errorMsg: errorMsg,
         game: game,
+        waiting: waiting,
       });
     });
   }
 
   componentWillUnmount() {
-    const gameId = this.props.match.params.gameId;
-    this.props.firebase.game(gameId).off();
+    this.gameRef.off();
+  }
+
+  stopHosting() {
+    this.gameRef.off();
+    const { gameId } = this.props.match.params;
+    const { uid } = this.props.authUser;
+     this.props.firebase.stopHosting(gameId, uid)
+      .then(() => {
+        this.props.history.push(ROUTES.HOME);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   render() {
-    const { loading, errorMsg, game } = this.state;
+    const { loading, errorMsg, game, waiting } = this.state;
     return (
       <div>
         {loading && <h1>Loading...</h1>}
         {!loading && errorMsg && <h1>{errorMsg}</h1>}
-        {!loading && !errorMsg && game.gameStatus == 'New' && <h1>Start Game Button</h1>} //need to handle update within these (maybe not this one. depends on what is in its state. nothing?)
-        {!loading && !errorMsg && game.gameStatus == 'Active' && <h1>ActiveHostScreen</h1>} //need to handle update within these
+        {!loading && !errorMsg && waiting && <h1>Waiting for players to join...</h1>}
+        {!loading && !errorMsg && <StopHostingButton onClick={this.stopHosting} />}
       </div>
     );
+    //{!loading && !errorMsg && !waiting && game.gameStatus == 'New' && <StartGameButton />} //need to handle update within these (maybe not this one. depends on what is in its state. nothing?)
+    //{!loading && !errorMsg && !waiting && game.gameStatus == 'Active' && <ActiveHostScreen />} //need to handle update within these
   }
 };
 
@@ -86,6 +106,7 @@ const condition = authUser => !!authUser;
 const HostPage = compose(
   withAuthorization(condition),
   withFirebase,
+  withRouter,
 )(HostPageBase);
 
 export default HostPage;
