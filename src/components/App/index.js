@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -13,9 +13,11 @@ import HomePage from '../Home';
 import AccountPage from '../Account';
 import AdminPage from '../Admin';
 import CreateCategoryPage from '../CreateCategory';
-import StartGamePage from '../StartGame';
+import BoardPage from '../Board';
 import HostPage from '../HostPage';
 import PlayerPage from '../PlayerPage';
+import JoinComponent from '../JoinComponent';
+
 
 
 
@@ -25,34 +27,68 @@ import * as ROUTES from '../../constants/routes';
 import { withAuthentication } from '../Session';
 
 
-const App = () => (
-  <Router>
-    <div>
-      <Navigation />
+class App extends Component {
+  // constructor(props) {
+  //
+  //   super(props);
+  //
+  //   this.state = {
+  //     loading: true,
+  //   }
+  // }
 
-      <hr />
+  // componentDidMount() {
+  //
+  //   const uid = this.props.authUser.uid;
+  //
+  //   this.currentGameRef = this.props.firebase.currentGame(uid);
+  //   this.currentGameRef.on('value', (snapshot) => {
+  //     const currentGame = snapshot.val();
+  //     this.setState({
+  //       loading: false,
+  //       currentGame: currentGame,
+  //     });
+  //   });
+  // }
 
-      <Route exact path={ROUTES.LANDING} component={LandingPage} />
-      <Route path={ROUTES.SIGN_UP} component={SignUpPage} />
-      <Route path={ROUTES.SIGN_IN} component={SignInPage} />
-      <Route path={ROUTES.PASSWORD_FORGET} component={PasswordForgetPage} />
-      <Route path={ROUTES.HOME} component={HomePage} />
-      <Route path={ROUTES.ACCOUNT} component={AccountPage} />
-      <Route path={ROUTES.ADMIN} component={AdminPage} />
-      <Route path={ROUTES.CREATE_CATEGORY} component={CreateCategoryPage} />
-      <Route path={ROUTES.BOARD} component={StartGamePage} />
-      <Route path={ROUTES.HOST} component={HostPage} />
-      <Route path={ROUTES.PLAYER} component={PlayerPage} />
+  // componentWillUnmount() {
+  //
+  //   this.currentGameRef.off();
+  // }
 
+  render() {
 
+    //const { loading, currentGame } = this.state;
 
-
-
-
-
-    </div>
-  </Router>
-);
+    return (
+      // <div>
+      //   // {loading &&
+      //   //   <h1>Loading...</h1>
+      //   // }
+      //   {!loading &&
+          <Router>
+            <div>
+              <Navigation />
+              <hr />
+              <Route exact path={ROUTES.LANDING} component={LandingPage} />
+              <Route path={ROUTES.SIGN_UP} component={SignUpPage} />
+              <Route path={ROUTES.SIGN_IN} component={SignInPage} />
+              <Route path={ROUTES.PASSWORD_FORGET} component={PasswordForgetPage} />
+              <Route path={ROUTES.HOME} component={HomePage} />
+              <Route path={ROUTES.ACCOUNT} component={AccountPage} />
+              <Route path={ROUTES.ADMIN} component={AdminPage} />
+              <Route path={ROUTES.CREATE_CATEGORY} component={CreateCategoryPage} />
+              <Route path={ROUTES.BOARD} component={BoardPage} />
+              <Route path={ROUTES.HOST} component={HostPage} />
+              <Route path={ROUTES.PLAYER} component={PlayerPage} />
+              <Route path={ROUTES.JOIN} component={JoinComponent} />
+            </div>
+          </Router>
+      //   }
+      // </div>
+    );
+  }
+}
 
 
 export default withAuthentication(App);

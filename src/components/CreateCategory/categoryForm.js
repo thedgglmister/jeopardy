@@ -18,6 +18,7 @@ class CategoryFormBase extends Component {
     const questionsList = Object.keys(questionsObj).map(questionId => ({
       ...questionsObj[questionId],
       questionId: questionId,
+      categoryId: category.categoryId,
     }));
     questionsList.sort((questionObj1, questionObj2) => questionObj1.value - questionObj2.value);
 
@@ -133,9 +134,6 @@ class CategoryFormBase extends Component {
       this.updateCategory(categoryObj);
     }
     else {
-      // questionsList.forEach((question) => {
-      //   delete question.questionId
-      // });
       this.insertCategory(categoryObj, JSON.parse(JSON.stringify(questionsList)));
     }
 

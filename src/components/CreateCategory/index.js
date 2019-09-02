@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import { compose } from 'recompose';
+import { Link } from 'react-router-dom';
+
 
 import { withFirebase } from '../Firebase';
 import { AuthUserContext, withAuthorization } from '../Session';
 import MyCategoriesList from './myCategoriesList';
 import CategoryForm from './categoryForm';
+import * as ROUTES from '../../constants/routes';
 
 
 
@@ -33,7 +36,8 @@ class CreateCategoryPageBase extends Component {
 
     const uid = this.props.authUser.uid;
 
-    this.props.firebase.myCategories(uid).on('value', snapshot => {
+    this.myCategoriesRef = this.props.firebase.myCategories(uid);
+    this.myCategoriesRef.on('value', snapshot => {
       console.log(snapshot.val());
       const categoriesObject = Object.assign({}, snapshot.val());
 
@@ -52,8 +56,7 @@ class CreateCategoryPageBase extends Component {
   }
 
   componentWillUnmount() {
-    const uid = this.props.authUser.uid;
-    this.props.firebase.myCategories(uid).off();
+    this.myCategoriesRef.off();
   }
 
   setCurrentCategoryId(event) {
@@ -100,6 +103,7 @@ class CreateCategoryPageBase extends Component {
 
     return (
       <div>
+          need to use withMyCategoriesRef instead of doing it in here. make categoriesByUid ref, instead of the ordering and querying of cateoriesRef.
 
           <CategoryForm category={currentCategory}
                         authUser={this.props.authUser}

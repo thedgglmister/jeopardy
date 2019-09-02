@@ -72,6 +72,12 @@ class Firebase {
   }
 
 
+  // *** Top Level Ref *** //
+  ref = function() {
+    return this.db.ref();
+  }
+
+
 
   // *** User API *** //
 
@@ -109,10 +115,16 @@ class Firebase {
     const categoriesRef = this.db.ref('categories');
 
     const newCategoryRef = categoriesRef.push();
+    const categoryRefPushKey = newCategoryRef.key;
+
     newCategoryRef.set(categoryObj);
     console.log(111);
     questions.forEach((question) => {
-      newCategoryRef.child('questions').push(question);
+      const newQuestionRef = newCategoryRef.child('questions').push();
+      const questionRefPushKey = newQuestionRef.key;
+      question.questionId = questionRefPushKey;
+      question.categoryId = categoryRefPushKey;
+      newQuestionRef.set(question);
     });
     console.log(222);
 
@@ -129,6 +141,34 @@ class Firebase {
 
   }
 
+
+  newGameCategories = function(categoryId, categoryObj) {
+    const newGameCategoriesRef = this.db.ref('categories').orderByChild('complete').equalTo(true).limitToFirst(12);
+    return newGameCategoriesRef;
+  }
+
+
+
+  gameCategories = function(gameId) {
+    const gameCategoriesRef = this.db.ref('gameCategories').child(gameId);
+    return gameCategoriesRef;
+  }
+
+  // *** Answers API *** //
+
+
+  answers = function(gameId) {
+    const answersRef = this.db.ref('answers').child(gameId);
+    return answersRef;
+  }
+
+
+  // *** Questions API *** //
+
+  activeQuestionByGame = function(gameId) {
+    const activeQuestionRef = this.db.ref(`activeQuestionsByGame/${gameId}`);
+    return activeQuestionRef;
+  }
 
 
   // *** Games API *** //
@@ -148,77 +188,86 @@ class Firebase {
 
 
 
+
+
   // ** Players API ** //
 
-  startHosting = function(gameId, uid) {
+  currentGame = function(uid) {
+    const currentGameRef = this.db.ref('currentGames').child(uid);
+    return currentGameRef;
+  }
+
+
+  startPlaying = function(gameId, role, uid, base64Signature) {
     const ref = this.db.ref();
 
     const currentGameUpdate = {
       gameId: gameId,
-      role: 'host',
+      role: role,
     };
 
-    const gameHostUpdate = {
+    const gameRoleUpdate = {
       uid: uid,
+      base64Signature: base64Signature
     };
 
     const updates = {}
-    updates[`games/${gameId}/host`] = gameHostUpdate;
-    updates[`users/${uid}/currentGame`] = currentGameUpdate;
+    updates[`games/${gameId}/${role}`] = gameRoleUpdate;
+    updates[`currentGames/${uid}`] = currentGameUpdate;
 
     return ref.update(updates);
   }
 
-  stopHosting = function(gameId, uid) {
+  stopPlaying = function(gameId, role, uid) {
     const ref = this.db.ref();
 
     const currentGameUpdate = null;
-    const gameHostUpdate = null;
+    const gameRoleUpdate = null;
 
     const updates = {}
-    updates[`games/${gameId}/host`] = gameHostUpdate;
-    updates[`users/${uid}/currentGame`] = currentGameUpdate;
+    updates[`games/${gameId}/${role}`] = gameRoleUpdate;
+    updates[`currentGames/${uid}`] = currentGameUpdate;
 
     return ref.update(updates);
   }
 
-  startPlaying = function(gameId, playerNumber, uid) {
-    const ref = this.db.ref();
+  // startPlaying = function(gameId, playerNumber, uid) {
+  //   const ref = this.db.ref();
+  //
+  //   const currentGameUpdate = {
+  //     gameId: gameId,
+  //     role: playerNumber,
+  //   };
+  //
+  //   const gamePlayerUpdate = {
+  //     uid: uid,
+  //     score: 0,
+  //   };
+  //
+  //   const updates = {}
+  //   updates[`games/${gameId}/${playerNumber}`] = gamePlayerUpdate;
+  //   updates[`users/${uid}/currentGame`] = currentGameUpdate;
+  //
+  //   return ref.update(updates);
+  // }
 
-    const currentGameUpdate = {
-      gameId: gameId,
-      role: playerNumber,
-    };
-
-    const gamePlayerUpdate = {
-      uid: uid,
-      score: 0,
-    };
-
-    const updates = {}
-    updates[`games/${gameId}/${playerNumber}`] = gamePlayerUpdate;
-    updates[`users/${uid}/currentGame`] = currentGameUpdate;
-
-    return ref.update(updates);
-  }
-
-  stopPlaying = function(gameId, playerNumber, uid) {
-    console.log(887);
-    console.log(playerNumber, uid, gameId);
-
-    const ref = this.db.ref();
-
-    const currentGameUpdate = null;
-    const gamePlayerUpdate = null;
-
-    const updates = {}
-    updates[`games/${gameId}/${playerNumber}`] = gamePlayerUpdate;
-    updates[`users/${uid}/currentGame`] = currentGameUpdate;
-    console.log(updates);
-
-
-    return ref.update(updates);
-  }
+  // stopPlaying = function(gameId, playerNumber, uid) {
+  //   console.log(887);
+  //   console.log(playerNumber, uid, gameId);
+  //
+  //   const ref = this.db.ref();
+  //
+  //   const currentGameUpdate = null;
+  //   const gamePlayerUpdate = null;
+  //
+  //   const updates = {}
+  //   updates[`games/${gameId}/${playerNumber}`] = gamePlayerUpdate;
+  //   updates[`users/${uid}/currentGame`] = currentGameUpdate;
+  //   console.log(updates);
+  //
+  //
+  //   return ref.update(updates);
+  // }
 
 
 
