@@ -1,38 +1,22 @@
 import React, { Component } from 'react';
 
 class MyCategoriesList extends Component {
-  constructor(props) {
-    super(props);
-
-    console.log(882);
-    console.log(this.props.myCategories);
-
-    this.state = {
-      myCategories: this.props.myCategories,
-      loading: this.props.loading,
-    };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (prevProps.myCategories != this.props.myCategories || prevProps.loading != this.props.loading) {
-      this.setState({
-        myCategories: this.props.myCategories,
-        loading: this.props.loading,
-      });
-    }
-  }
 
   render() {
-    const { myCategories, loading } = this.state;
+    const { myCategories, setCurrentCategory } = this.props;
+
+    const myCategoriesList = Object.keys(myCategories).map(categoryId => ({
+      ...myCategories[categoryId],
+      categoryId: categoryId,
+    }));
 
     return (
       <div>
         <h1>My Categories</h1>
-        {loading && <div>Loading ...</div>}
         <div>
-          {myCategories.map(category => (
+          {myCategoriesList.map(category => (
             <div key={category.categoryId}>
-              <a href="#" name={category.categoryId} onClick={this.props.setCurrentCategoryId}>
+              <a href="#" name={category.categoryId} onClick={setCurrentCategory}>
                 {category.categoryName ? category.categoryName : 'Untitled'}
                 {!category.complete && <span>(Incomplete)</span>}
               </a>
@@ -41,14 +25,12 @@ class MyCategoriesList extends Component {
           <br/>
 
           <div>
-            <a href = "#" onClick={this.props.setCurrentCategoryId}>
+            <a href = "#" onClick={setCurrentCategory}>
               New Category
             </a>
           </div>
           <br/>
-
         </div>
-
       </div>
     );
   }

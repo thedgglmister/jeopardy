@@ -94,13 +94,14 @@ class Firebase {
   // *** Categories API *** //
 
   myCategories = function(uid) {
-    const ref = this.db.ref('categories');
-    console.log(334);
-    console.log(ref);
-
-    return ref
-            .orderByChild('creatorUid')
-            .startAt(uid).endAt(uid);
+    const myCategoriesRef = this.db.ref(`myCategories/${uid}`);
+    return myCategoriesRef;
+    // console.log(334);
+    // console.log(ref);
+    //
+    // return ref
+    //         .orderByChild('creatorUid')
+    //         .startAt(uid).endAt(uid);
   }
 
   category = function(categoryId) {
@@ -111,34 +112,44 @@ class Firebase {
     return ref;
   }
 
-  createCategory = function(categoryObj, questions) {
-    const categoriesRef = this.db.ref('categories');
+  createCategory = function(categoryObj) {
+    console.log(777111);
+    const ref = this.db.ref();
 
+    const categoriesRef = ref.child('categories');
     const newCategoryRef = categoriesRef.push();
-    const categoryRefPushKey = newCategoryRef.key;
+    const categoryPushKey = newCategoryRef.key;
 
-    newCategoryRef.set(categoryObj);
-    console.log(111);
-    questions.forEach((question) => {
+    const questionsClone = {};
+    for (let questionId in categoryObj.questions) {
+      const question = categoryObj.questions[questionId];
       const newQuestionRef = newCategoryRef.child('questions').push();
-      const questionRefPushKey = newQuestionRef.key;
-      question.questionId = questionRefPushKey;
-      question.categoryId = categoryRefPushKey;
-      newQuestionRef.set(question);
-    });
-    console.log(222);
+      const questionPushKey = newQuestionRef.key;
+      question.questionId = questionPushKey;
+      question.categoryId = categoryPushKey;
+      questionsClone[questionPushKey] = question;
+    }
+    categoryObj.questions = questionsClone;
 
+    const creatorUid = categoryObj.creatorUid;
+    const updates = {};
+    updates[`categories/${categoryPushKey}`] = categoryObj;
+    updates[`myCategories/${creatorUid}/${categoryPushKey}`] = categoryObj;
 
-    return newCategoryRef;
+    return ref.update(updates);
   }
 
 
-  editCategory = function(categoryId, categoryObj) {
-    const categoryRef = this.db.ref('categories').child(categoryId);
+  editCategory = function(categoryObj) {
+    console.log(77772222);
+    const ref = this.db.ref();
+    const { categoryId, creatorUid } = categoryObj;
 
+    const updates = {};
+    updates[`categories/${categoryId}`] = categoryObj;
+    updates[`myCategories/${creatorUid}/${categoryId}`] = categoryObj;
 
-    return categoryRef.set(categoryObj);
-
+    return ref.update(updates);
   }
 
 
@@ -231,43 +242,7 @@ class Firebase {
     return ref.update(updates);
   }
 
-  // startPlaying = function(gameId, playerNumber, uid) {
-  //   const ref = this.db.ref();
-  //
-  //   const currentGameUpdate = {
-  //     gameId: gameId,
-  //     role: playerNumber,
-  //   };
-  //
-  //   const gamePlayerUpdate = {
-  //     uid: uid,
-  //     score: 0,
-  //   };
-  //
-  //   const updates = {}
-  //   updates[`games/${gameId}/${playerNumber}`] = gamePlayerUpdate;
-  //   updates[`users/${uid}/currentGame`] = currentGameUpdate;
-  //
-  //   return ref.update(updates);
-  // }
 
-  // stopPlaying = function(gameId, playerNumber, uid) {
-  //   console.log(887);
-  //   console.log(playerNumber, uid, gameId);
-  //
-  //   const ref = this.db.ref();
-  //
-  //   const currentGameUpdate = null;
-  //   const gamePlayerUpdate = null;
-  //
-  //   const updates = {}
-  //   updates[`games/${gameId}/${playerNumber}`] = gamePlayerUpdate;
-  //   updates[`users/${uid}/currentGame`] = currentGameUpdate;
-  //   console.log(updates);
-  //
-  //
-  //   return ref.update(updates);
-  // }
 
 
 
