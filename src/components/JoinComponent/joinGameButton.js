@@ -37,7 +37,8 @@ class JoinGameButtonBase extends Component {
 
   joinGame() {
     const { gameId, role, uid } = this.props;
-    const base64Signature = this.signatureCanvas.toDataURL('image/png');
+
+    const base64Signature = role == 'host' ? null : this.signatureCanvas.toDataURL('image/png');
     console.log(base64Signature);
     this.props.firebase.startPlaying(gameId, role, uid, base64Signature)
       .then(() => {
@@ -50,21 +51,26 @@ class JoinGameButtonBase extends Component {
 
   render() {
     const { signatureExists } = this.state;
+    const { role } = this.props;
+    const disabled  = role != 'host' && !signatureExists;
+
+
+
 
 
 
 
     return (
       <div>
-        <SignatureCanvas penColor='#fff'
-                          ref={(signatureCanvas) => {
-                            this.signatureCanvas = signatureCanvas
-                          }}
-                          onEnd={this.handleCanvasChange}
-                          canvasProps={{width:600, height: 300, style: {border: '1px solid black', backgroundColor: '#00f' }, className: 'sigCanvas'}} />
-        <button type="button" disabled={!signatureExists} onClick={this.clearSignature}>Clear</button>
+        {role != 'host' && <SignatureCanvas penColor='#fff'
+                            ref={(signatureCanvas) => {
+                              this.signatureCanvas = signatureCanvas
+                            }}
+                            onEnd={this.handleCanvasChange}
+                            canvasProps={{width:600, height: 300, style: {border: '1px solid black', backgroundColor: '#00f' }, className: 'sigCanvas'}} />}
+        {role != 'host' && <button type="button" disabled={!signatureExists} onClick={this.clearSignature}>Clear</button>}
 
-        <button type="button" disabled={!signatureExists} onClick={this.joinGame}>JOIN BUTTON</button>
+        <button type="button" disabled={disabled} onClick={this.joinGame}>JOIN BUTTON</button>
         Put option to tell little stories about your self, so host can see them and ask you about them before game
       </div>
     );

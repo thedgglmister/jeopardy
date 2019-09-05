@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 
 import { withFirebase } from '../Firebase';
+import ActiveQuestionScreen from './activeQuestionScreen';
+
 
 
 class BoardQuestionBase extends Component {
@@ -20,6 +22,9 @@ class BoardQuestionBase extends Component {
       value: question.value * round,
     };
     updates[`gameCategories/${gameId}/${categoryId}/questions/${questionId}/alreadyUsed`] = true;
+    console.log(12345666);
+
+    console.log(updates);
     ref.update(updates)
     .catch((error) => {
       console.log(error);
@@ -27,17 +32,32 @@ class BoardQuestionBase extends Component {
   }
 
   render() {
-    const { round, question } = this.props;
-    const { value, alreadyUsed } = question;
+    const { round, question, activeQuestion } = this.props;
+    const { value, alreadyUsed, questionId } = question;
 
-    console.log(6555);
-    console.log(question);
-    console.log(round);
-    console.log(value);
+
+
+
+    const boardQuestionContainerStyle = {
+      height: '7.6357vw',
+      border: '1px solid black',
+      color: '#fff',
+      font: '36px',
+      fontWeight: '800',
+      textAlign: 'center',
+      boxSizing: 'border-box',
+    };
+
+    const isActive = activeQuestion && activeQuestion.questionId == questionId;
 
     return (
-      <button type="button" disabled={alreadyUsed} onClick={this.activateQuestion}>{value * round}</button>
+      <div className="board-question-container" style={boardQuestionContainerStyle} onClick={alreadyUsed || activeQuestion ? null : this.activateQuestion}>
+        {isActive && <ActiveQuestionScreen activeQuestion={activeQuestion}/>}
+        {!alreadyUsed && <div>{value * round}</div>}
+      </div>
     );
+    // <br/>
+    // <button type="button" disabled={alreadyUsed} onClick={this.activateQuestion}>SELECT</button>
   }
 }
 const BoardQuestion = withFirebase(BoardQuestionBase);

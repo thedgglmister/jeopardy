@@ -59,6 +59,8 @@ class App extends Component {
   render() {
 
     //const { loading, currentGame } = this.state;
+    // <Navigation />
+    // <hr />
 
     return (
       // <div>
@@ -68,8 +70,6 @@ class App extends Component {
       //   {!loading &&
           <Router>
             <div>
-              <Navigation />
-              <hr />
               <Route exact path={ROUTES.LANDING} component={LandingPage} />
               <Route path={ROUTES.SIGN_UP} component={SignUpPage} />
               <Route path={ROUTES.SIGN_IN} component={SignInPage} />

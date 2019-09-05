@@ -19,6 +19,22 @@ class HostPageBase extends Component {
     this.activateGame = this.activateGame.bind(this);
   }
 
+  componentDidMount() {
+    const { gameId } = this.props.match.params;
+    const { currentGame, game, activeQuestion } = this.props;
+
+    const isMyGame = currentGame && currentGame.gameId == gameId && currentGame.role == 'host';
+    if (!isMyGame) {
+      this.props.history.push(ROUTES.HOME);
+      return;
+    }
+    const { gameStatus, p1, p2, p3 } = game;
+    if (!gameStatus) {
+      this.props.history.push(ROUTES.HOME);
+      return;
+    }
+  }
+
 
   stopHosting() {
     const { gameId } = this.props.match.params;
@@ -93,7 +109,6 @@ class HostPageBase extends Component {
 
     const isMyGame = currentGame && currentGame.gameId == gameId && currentGame.role == 'host';
     if (!isMyGame) {
-      this.props.history.push(ROUTES.HOME);
       return null;
     }
 
@@ -101,7 +116,7 @@ class HostPageBase extends Component {
     let waitingMsg = null;
     const { gameStatus, p1, p2, p3 } = game;
     if (!gameStatus) {
-      this.props.history.push(ROUTES.HOME);
+      return null;
     }
     else if (gameStatus == 'Finished') {
       errorMsg = "This game has already finished";
@@ -109,6 +124,7 @@ class HostPageBase extends Component {
     else if (gameStatus == "New" && !(p1 && p2 && p3)) {
       waitingMsg = "Waiting for players to join...";
     }
+
 
     return (
       <div>

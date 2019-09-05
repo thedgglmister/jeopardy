@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 
-import BoardCategory from './boardCategory';
-import BoardActiveQuestionScreen from './boardActiveQuestionScreen';
+import BoardCategories from './boardCategories';
 import ScoreCards from './scoreCards';
 
 
@@ -21,12 +20,15 @@ class GameBoard extends Component {
     allCategoriesArr.sort((a, b) => a.categoryNumber - b.categoryNumber);
     const thisRoundsCategoriesArr = allCategoriesArr.slice(round == 1 ? 0 : 6, round == 1 ? 6 : 12);
 
+    const gameBoardContainerStyle = {
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: 'blue',
+    }
+
     return (
-      <div>
-        {activeQuestion && <BoardActiveQuestionScreen activeQuestion={activeQuestion} />}
-        {!activeQuestion && thisRoundsCategoriesArr.map((category) => (
-          <BoardCategory key={category.categoryId} gameId={gameId} category={category} round={round} />
-        ))}
+      <div className="game-board-container" style={gameBoardContainerStyle}>
+        {<BoardCategories gameId={gameId} categoriesArr={thisRoundsCategoriesArr} round={round} activeQuestion={activeQuestion} />}
         <ScoreCards answers={answers} game={game} />
       </div>
     );

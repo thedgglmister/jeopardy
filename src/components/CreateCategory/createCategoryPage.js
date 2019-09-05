@@ -112,6 +112,12 @@ class CreateCategoryPageBase extends Component {
           https://jsfiddle.net/48ue2hsb/4/
 
           https://firebase.google.com/docs/database/web/read-and-write#save_data_as_transactions (if this is about blocking, need ot do it when taking positions in a game, and for buzzer, or whatever)
+
+          make sure handle what happens if someone leaves game while active question, for example. need to handle timer, if any? if player quits and ends game, makre sure active question ref ettc all go away.
+
+          if not enough room on board to show signatures and scores, just show scores, and on hover have it pop up to see signatures as well.
+
+          since i dont know what size the categoryNames or questions or final jeopardies, answers dont know how long they will be, need to make sure i handle this. font sizes and padding and stuff?
       </div>
     );
   }
